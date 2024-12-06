@@ -46,22 +46,22 @@ class Segment:
                     self.sprite = Segment.BEND[0]
                 else:
                     self.sprite = Segment.BEND[1]
-            case right if right == board.move(self.pos, Direction.RIGHT, 1):
+            case down if down == board.move(self.pos, Direction.DOWN, 1):
                 if board.getTile(self.pos) == Tile.EATEN:
                     self.sprite = Segment.BELLY[2]
-                elif prev == board.move(self.pos, Direction.LEFT, 1):
-                    self.sprite = Segment.BODY[2]
                 elif prev == board.move(self.pos, Direction.UP, 1):
-                    self.sprite = Segment.BEND[3]
+                    self.sprite = Segment.BODY[2]
+                elif prev == board.move(self.pos, Direction.LEFT, 1):
+                    self.sprite = Segment.BEND[1]
                 else:
                     self.sprite = Segment.BEND[2]
             case _:
                 if board.getTile(self.pos) == Tile.EATEN:
                     self.sprite = Segment.BELLY[3]
-                if prev == board.move(self.pos, Direction.UP, 1):
+                elif prev == board.move(self.pos, Direction.LEFT, 1):
                     self.sprite = Segment.BODY[3]
-                if prev == board.move(self.pos, Direction.LEFT, 1):
-                    self.sprite = Segment.BEND[1]
+                elif prev == board.move(self.pos, Direction.UP, 1):
+                    self.sprite = Segment.BEND[3]
                 else:
                     self.sprite = Segment.BEND[2]
 
