@@ -1,13 +1,16 @@
 from app.board import Board
 from app.enums import Tile
 from app.position import Position
+from app.constants import SPRITES_PATH
 from app.game_objects.game_object import GameObject
-import pygame
+from pygame import Surface
+from pygame.image import load
 
 
 class Fruit(GameObject):
     def __init__(self, board: Board, snake_pos: Position) -> None:
         super().__init__(board)
+        self.sprite = load(SPRITES_PATH + "fruit.svg")
         self.spawn(snake_pos)
 
     def spawn(self, pos: Position) -> None:
@@ -27,7 +30,5 @@ class Fruit(GameObject):
                 self.pos = sample[i]
         b.setTile(self.pos, Tile.FRUIT)
 
-    def draw(self, surface: pygame.Surface) -> None:
-        pygame.draw.rect(
-            surface, pygame.Color("#aa0000"), self.board.getTileRect(self.pos)
-        )
+    def draw(self, surface: Surface) -> None:
+        surface.blit(self.sprite, self.board.getTileRect(self.pos))

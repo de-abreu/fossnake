@@ -32,11 +32,11 @@ class Main:
             return
         match self.snake.move():
             case Tile.FRUIT:
-                self.fruit.spawn(self.snake.pos)
+                self.fruit.spawn(self.snake.head.pos)
 
                 # Increment the score by the percentual of energy left, before restoring it
-                self.score += self.snake.energy * 100 // MAX_ENERGY
-                self.snake.energy = MAX_ENERGY
+                self.score += self.energy * 100 // MAX_ENERGY
+                self.energy = MAX_ENERGY
                 if self.score > self.highscore:
                     self.highscore = self.score
                 if self.score != self.next_increase:
@@ -47,25 +47,29 @@ class Main:
                 self.next_increase += self.next_increase
                 pygame.time.set_timer(self.SCREEN_UPDATE, self.interval)
 
-            case other if other == Tile.SNAKE or self.snake.energy <= 0:
-                self.saveHighscore()
-                self.reset(self.screen)
+            case other:
+                if self.energy <= 0 or other == Tile.SNAKE or other == Tile.EATEN:
+                    self.saveHighscore()
+                    self.reset(self.screen)
+                else:
+                    self.energy -= 1
 
     def draw(self):
         self.screen.drawBoard([self.fruit, self.snake])
-        self.screen.drawHUD(self.score, self.highscore, self.snake.energy)
+        self.screen.drawHUD(self.score, self.highscore, self.energy)
         pygame.display.update()
 
     def reset(self, screen: Screen):
         # Game Objects
         self.board = Board(CELL_NUMBER, CELL_NUMBER, CELL_SIZE)
         self.snake = Snake(self.board)
-        self.fruit = Fruit(self.board, self.snake.pos)
+        self.fruit = Fruit(self.board, self.snake.head.pos)
         self.screen = screen
 
-        # Score, and game speed (increases as score is raised)
+        # Score, energy, and game speed
         self.score = 0
         self.highscore = self.retrieveHighscore()
+        self.energy = MAX_ENERGY
         self.next_increase = 100
         self.interval = 150
 
