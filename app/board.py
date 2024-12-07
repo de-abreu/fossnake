@@ -1,4 +1,4 @@
-from app.constants import H_BOUNDARIES, V_BOUNDARIES
+from app.constants import BOUNDARIES
 from app.enums import Direction, Tile
 from app.position import Position
 from pygame import Rect
@@ -49,8 +49,8 @@ class Board:
 
     def getTileRect(self, pos: Position) -> Rect:
         return Rect(
-            pos.x * self.tile_size + H_BOUNDARIES,
-            pos.y * self.tile_size + V_BOUNDARIES,
+            pos.x * self.tile_size + BOUNDARIES,
+            pos.y * self.tile_size + BOUNDARIES,
             self.tile_size,
             self.tile_size,
         )

@@ -1,5 +1,5 @@
 from app.board import Board
-from app.constants import MAX_ENERGY, CELL_NUMBER, CELL_SIZE
+from app.constants import INITIAL_INTERVAL, MAX_ENERGY, CELL_NUMBER, CELL_SIZE
 from app.enums import Tile
 from app.game_objects.fruit import Fruit
 from app.game_objects.snake import Snake
@@ -7,7 +7,7 @@ from app.screen import Screen
 import pygame
 
 
-class Main:
+class Game:
     def __init__(self, screen: Screen) -> None:
         self.reset(screen)
 
@@ -16,7 +16,7 @@ class Main:
             match event.type:
                 case pygame.QUIT:
                     self.quit()
-                case self.SCREEN_UPDATE:
+                case pygame.USEREVENT:
                     self.update()
                 case pygame.KEYDOWN:
                     match event.key:
@@ -45,7 +45,7 @@ class Main:
                 # Increase the snake's energy and speed (if deemed so)
                 self.interval = self.interval * 95 // 100  # Speed increase of 5%
                 self.next_increase += self.next_increase
-                pygame.time.set_timer(self.SCREEN_UPDATE, self.interval)
+                pygame.time.set_timer(pygame.USEREVENT, self.interval)
 
             case other:
                 if self.energy <= 0 or other == Tile.SNAKE or other == Tile.EATEN:
@@ -56,7 +56,7 @@ class Main:
 
     def draw(self):
         self.screen.drawBoard([self.fruit, self.snake])
-        self.screen.drawHUD(self.score, self.highscore, self.energy)
+        self.screen.drawHUD(self.score, self.highscore, self.energy, self.paused)
         pygame.display.update()
 
     def reset(self, screen: Screen):
@@ -71,12 +71,12 @@ class Main:
         self.highscore = self.retrieveHighscore()
         self.energy = MAX_ENERGY
         self.next_increase = 100
-        self.interval = 150
+        self.interval = INITIAL_INTERVAL
 
         # Pause Boolean and setting the initial rate at which the game gets updated
         self.paused = False
-        self.SCREEN_UPDATE = pygame.USEREVENT
-        pygame.time.set_timer(self.SCREEN_UPDATE, self.interval)
+        # TODO: Remve the following line once the main menu implementation is finished
+        pygame.time.set_timer(pygame.USEREVENT, self.interval)
 
     def retrieveHighscore(self):
         try:

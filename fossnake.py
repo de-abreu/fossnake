@@ -25,14 +25,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import pygame
-from app.constants import HEIGHT, WIDTH
+from app.constants import SCREEN_SIZE
 from app.screen import Screen
-from app.main import Main
+from app.game import Game
 
 pygame.init()
 clk = pygame.time.Clock()
-game_loop = Main(Screen(HEIGHT, WIDTH))
+screen = Screen(SCREEN_SIZE)
+# running = False
+
+# menu_loop = Menu(screen, highscore)
+game_loop = Game(screen)
 while True:
+    # if not running:
+    #     running = menu_loop.listenEvents()
+    #     menu_loop.draw()
+    # else:
     game_loop.listenEvents()
     game_loop.draw()
     clk.tick(60)

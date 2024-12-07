@@ -1,6 +1,5 @@
 from enum import Enum, auto
 
-
 class Tile(Enum):
     EMPTY, SNAKE, FRUIT, EATEN = (auto() for _ in range(4))
 
