@@ -28,19 +28,20 @@ import pygame
 from app.constants import SCREEN_SIZE
 from app.screen import Screen
 from app.game import Game
+from app.menu import Menu
 
 pygame.init()
 clk = pygame.time.Clock()
 screen = Screen(SCREEN_SIZE)
-# running = False
+difficulty = None
 
-# menu_loop = Menu(screen, highscore)
+menu_loop = Menu(screen)
 game_loop = Game(screen)
 while True:
-    # if not running:
-    #     running = menu_loop.listenEvents()
-    #     menu_loop.draw()
-    # else:
-    game_loop.listenEvents()
-    game_loop.draw()
+    if not difficulty:
+        difficulty = menu_loop.listenEvents()
+        menu_loop.draw()
+    else:
+        game_loop.listenEvents()
+        game_loop.draw()
     clk.tick(60)

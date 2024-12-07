@@ -75,7 +75,7 @@ class Game:
 
         # Pause Boolean and setting the initial rate at which the game gets updated
         self.paused = False
-        # TODO: Remve the following line once the main menu implementation is finished
+        # TODO: Remove the following line once the main menu implementation is finished
         pygame.time.set_timer(pygame.USEREVENT, self.interval)
 
     def retrieveHighscore(self):

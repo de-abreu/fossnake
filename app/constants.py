@@ -1,6 +1,4 @@
 # Constants, remove some of these when implementing the Settings menu.
-BG = "#8fbc47"
-FG = "#233c1e"
 CELL_NUMBER = 20
 CELL_SIZE = 32
 BOARD_LENGTH = CELL_SIZE * CELL_NUMBER
