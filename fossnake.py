@@ -24,24 +24,35 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import pygame
 from app.constants import SCREEN_SIZE
-from app.screen import Screen
+from app.enums import Difficulty, Loop
 from app.game import Game
 from app.menu import Menu
+from app.screen import Screen
+from app.state import State
+import pygame
 
 pygame.init()
 clk = pygame.time.Clock()
-screen = Screen(SCREEN_SIZE)
-difficulty = None
+game_state = State(Loop.MENU, Difficulty.EASY, "highscore.txt")
+screen = Screen(SCREEN_SIZE, game_state)
+menu_loop = Menu(screen, game_state)
+game_loop = Game(screen, game_state)
 
-menu_loop = Menu(screen)
-game_loop = Game(screen)
 while True:
-    if not difficulty:
-        difficulty = menu_loop.listenEvents()
-        menu_loop.draw()
-    else:
-        game_loop.listenEvents()
-        game_loop.draw()
+    match game_state.loop:
+        case Loop.MENU:
+            menu_loop.listenEvents()
+            menu_loop.draw()
+        case Loop.SETUP:
+            game_loop.reset()
+            game_state.loop = Loop.GAME
+        case Loop.GAME:
+            game_loop.listenEvents()
+            game_loop.draw()
+        case _:
+            break
     clk.tick(60)
+game_state.highscore.save()
+pygame.quit()
+exit()

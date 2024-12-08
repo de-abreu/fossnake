@@ -1,4 +1,6 @@
+from app.enums import Difficulty
 from app.game_objects.game_object import GameObject
+from app.state import State
 from app.constants import (
     BOARD_LENGTH,
     BOUNDARIES,
@@ -14,7 +16,8 @@ class Screen:
     FG = pygame.Color("#233c1e")
     BG = pygame.Color("#8fbc47")
 
-    def __init__(self, size: int) -> None:
+    def __init__(self, size: int, state: State) -> None:
+        self.state = state
         self.title_font = pygame.font.Font(FONT_PATH, 2 * CELL_SIZE)
         self.body_font = pygame.font.Font(FONT_PATH, CELL_SIZE // 2)
         self.border = pygame.Rect((BOUNDARIES,) * 2, (BOARD_LENGTH,) * 2)
@@ -39,8 +42,7 @@ class Screen:
         )
 
         self.option_labels = [
-            self.body_font.render(i, True, Screen.FG)
-            for i in ["EASY", "NORMAL", "HARD"]
+            self.body_font.render(i, True, Screen.FG) for i in Difficulty.str_list()
         ]
 
         spacing = 2 * CELL_SIZE
@@ -52,11 +54,11 @@ class Screen:
             (option_pos_x + (self.body_font.size("NORMAL")[0] + spacing), option_pos_y),
         ]
 
-    def drawHUD(self, score: int, highscore: int, energy: int, paused: bool):
+    def drawHUD(self, score: int, energy: int, paused: bool):
         top_row_label = (
             'GAME PAUSED: PRESS "P" TO RESUME'
             if paused
-            else f"HIGHSCORE: {highscore:05d}"
+            else f"HIGHSCORE: {self.state.getHighscore():05d}"
         )
         top_row = self.body_font.render(top_row_label, True, Screen.FG)
         bottom_row = self.body_font.render(f"SCORE: {score:05d}", True, Screen.FG)
@@ -76,13 +78,14 @@ class Screen:
             game_object.draw(self.display)
         pygame.draw.rect(self.display, Screen.FG, self.border, 5)
 
-    def drawMenuCursor(self, option: int) -> None:
+    def drawMenuCursor(self) -> None:
+        option = self.state.getDifficultyIndex()
         pos = self.option_pos[option]
-        pos = (pos[0] - 5, pos[1] - 5)
+        pos = (pos[0] - 8, pos[1] - 8)
         width = self.option_labels[option].get_width() + 10
-        height = self.option_labels[option].get_height() + 10
+        height = self.option_labels[option].get_height() + 16
         selection = pygame.Rect(pos, (width, height))
-        pygame.draw.rect(self.display, Screen.FG, selection, 2)
+        pygame.draw.rect(self.display, Screen.FG, selection, 4)
 
     def drawMenuBackground(self) -> None:
         self.display.fill(Screen.BG)
