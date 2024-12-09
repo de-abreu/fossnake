@@ -1,6 +1,8 @@
-from app.enums import Difficulty
-from app.game_objects.game_object import GameObject
+from app.enums import Difficulty, GameState
+from app.game_objects.snake import Snake
+from app.game_objects.fruit import Fruit
 from app.state import State
+from enum import auto
 from app.constants import (
     BOARD_LENGTH,
     BOUNDARIES,
@@ -15,6 +17,7 @@ import pygame
 class Screen:
     FG = pygame.Color("#233c1e")
     BG = pygame.Color("#8fbc47")
+    TOPLEFT, TOPRIGHT, BOTTOMLEFT, BOTTOMRIGHT = (auto() for _ in range(4))
 
     def __init__(self, size: int, state: State) -> None:
         self.state = state
@@ -24,16 +27,15 @@ class Screen:
         self.display = pygame.display.set_mode((size, size))
         self.energy_label = self.body_font.render("ENERGY", True, Screen.FG)
         self.energy_max_length = 4 * CELL_SIZE
-        self.hud_bottom_row = size - BOUNDARIES + CELL_SIZE // 2
-        self.hud_top_row = BOUNDARIES - CELL_SIZE
-        self.bottom_row_pos = (BOUNDARIES, self.hud_bottom_row)
-        self.top_row_pos = (BOUNDARIES, self.hud_top_row)
-        self.energy_pos = BOUNDARIES + BOARD_LENGTH - 9 * CELL_SIZE, self.hud_bottom_row
+        self.bottom_row = BOUNDARIES + BOARD_LENGTH + CELL_SIZE // 2
+        self.top_row = BOUNDARIES - CELL_SIZE
+        self.energy_pos = BOUNDARIES + BOARD_LENGTH - 9 * CELL_SIZE, self.bottom_row
 
         # Main menu contents
         self.title = "FOSSNAKE"
         self.title_pos = (BOUNDARIES + CELL_SIZE // 2,) * 2
 
+        # Difficulty options
         cta = "CHOOSE A DIFFICULTY:"
         self.cta_label = self.body_font.render(cta, True, Screen.FG)
         self.cta_pos = (
@@ -54,25 +56,41 @@ class Screen:
             (option_pos_x + (self.body_font.size("NORMAL")[0] + spacing), option_pos_y),
         ]
 
-    def drawHUD(self, score: int, energy: int, paused: bool):
-        top_row_label = (
-            'GAME PAUSED: PRESS "P" TO RESUME'
-            if paused
-            else f"HIGHSCORE: {self.state.getHighscore():05d}"
-        )
-        top_row = self.body_font.render(top_row_label, True, Screen.FG)
-        bottom_row = self.body_font.render(f"SCORE: {score:05d}", True, Screen.FG)
+    def printToCorner(self, text: str, corner: int):
+        label = self.body_font.render(text, True, Screen.FG)
+        match corner:
+            case Screen.TOPLEFT:
+                pos = (BOUNDARIES, self.top_row)
+            case Screen.TOPRIGHT:
+                pos = (BOUNDARIES + BOARD_LENGTH - label.get_size()[0], self.top_row)
+            case Screen.BOTTOMLEFT:
+                pos = (BOUNDARIES, self.bottom_row)
+            case _:
+                pos = (BOUNDARIES + BOARD_LENGTH - label.get_size()[0], self.bottom_row)
+        self.display.blit(label, pos)
+
+    def drawHUD(self, score: int, energy: int, state: GameState):
+        match state:
+            case GameState.RUNNING:
+                self.printToCorner(
+                    f"HIGHSCORE: {self.state.getHighscore():05d}", Screen.TOPLEFT
+                )
+                self.printToCorner("P: PAUSE", Screen.TOPRIGHT)
+            case GameState.PAUSED:
+                self.printToCorner("P: RESUME GAME", Screen.TOPLEFT)
+                self.printToCorner("ESC: QUIT", Screen.TOPRIGHT)
+            case _:
+                self.printToCorner("GAME OVER: PRESS ESC TO GO BACK", Screen.TOPLEFT)
+        self.printToCorner(f"SCORE: {score:05d}", Screen.BOTTOMLEFT)
         energy_length = int(energy / MAX_ENERGY * self.energy_max_length)
         energy_bar = pygame.Rect(
-            (BOARD_LENGTH + BOUNDARIES - energy_length, self.hud_bottom_row),
+            (BOARD_LENGTH + BOUNDARIES - energy_length, self.bottom_row),
             (energy_length, CELL_SIZE // 2),
         )
-        self.display.blit(top_row, self.top_row_pos)
-        self.display.blit(bottom_row, self.bottom_row_pos)
         self.display.blit(self.energy_label, self.energy_pos)
         pygame.draw.rect(self.display, Screen.FG, energy_bar)
 
-    def drawBoard(self, game_objects: list[GameObject]) -> None:
+    def drawBoard(self, game_objects: list[Snake | Fruit]) -> None:
         self.display.fill(Screen.BG)
         for game_object in game_objects:
             game_object.draw(self.display)
@@ -97,9 +115,13 @@ class Screen:
             self.display.blit(char_label, char_pos)
             char_pos = (char_pos[0] + 2.43 * CELL_SIZE, char_pos[1])
 
-        # Print all the rest
+        # Print difficulty options
         self.display.blit(self.cta_label, self.cta_pos)
         for label, pos in zip(self.option_labels, self.option_pos):
             self.display.blit(label, pos)
 
+        # Print control instructions
+        self.printToCorner("ESC: QUIT", Screen.TOPRIGHT)
+        self.printToCorner("W/A/S/D: MOVE", Screen.BOTTOMLEFT)
+        self.printToCorner("ENTER: CONFIRM", Screen.BOTTOMRIGHT)
         pygame.draw.rect(self.display, Screen.FG, self.border, 5)

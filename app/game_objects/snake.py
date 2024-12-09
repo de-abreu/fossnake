@@ -1,22 +1,15 @@
 from app.board import Board
-from app.constants import MAX_LENGTH
-from app.enums import Tile, Direction
+from app.enums import Difficulty, Direction
 from app.game_objects.game_object import GameObject
+from app.game_objects.fruit import Fruit
 from app.game_objects.segment import Segment
 from app.position import Position
 import pygame
 
 
 class Snake(GameObject):
-    def __init__(self, board: Board) -> None:
+    def __init__(self, board: Board, max_length: int) -> None:
         super().__init__(board)
-        self.spawn()
-
-    @property
-    def head(self):
-        return self.body[0]
-
-    def spawn(self) -> None:
         # Place the snake on the board at a random position where it's head is at least three tiles away from a border.
         initial_pos = self.board.random(3)
 
@@ -28,32 +21,40 @@ class Snake(GameObject):
         self.body = [
             Segment(self.board.move(initial_pos, body_orientation, i)) for i in range(3)
         ]
-        self.assignSprites()
-
+        self.assignSprites(False)
         for segment in self.body:
-            self.board.setTile(segment.pos, Tile.SNAKE)
+            self.board.setTile(segment.pos, self)
 
-    def assignSprites(self) -> None:
+        # Set maximum length and energy according to the difficulty level requirements
+        self.max_length = max_length
+
+    @property
+    def head(self):
+        return self.body[0]
+
+    def assignSprites(self, eaten: bool) -> None:
         self.head.assignHead(self.direction[0], self.board)
-        self.body[1].assignNeck(self.head.pos, self.body[2].pos, self.board)
+        self.body[1].assignNeck(self.head.pos, self.body[2].pos, eaten, self.board)
         self.body[-1].assignTail(self.body[-2].pos, self.board)
 
-    def move(self) -> Tile:
+    def update(self) -> GameObject | None:
         # fetch the tile type at the position the snake is moving to
         next_pos = self.board.move(self.head.pos, self.direction[0], 1)
         next_tile = self.board.getTile(next_pos)
 
         # If moving onto itself, interrupt
-        if next_tile != Tile.SNAKE and next_tile != Tile.EATEN:
-            # Update snake and board accordingly
+        if next_tile != self:
+            # Update the snake
             self.body = [Segment(next_pos)] + self.body
-            if next_tile == Tile.FRUIT:
-                self.board.setTile(self.head.pos, Tile.EATEN)
+            self.board.setTile(self.head.pos, self)
+            if type(next_tile) is Fruit:
+                if next_tile.poisoned or len(self.body) == self.max_length:
+                    self.board.setTile(self.body.pop().pos, None)
+                self.assignSprites(True)
+                next_tile.spawn(self.body[0].pos)
             else:
-                self.board.setTile(self.head.pos, Tile.SNAKE)
-            if len(self.body) == MAX_LENGTH or next_tile != Tile.FRUIT:
-                self.board.setTile(self.body.pop().pos, Tile.EMPTY)
-            self.assignSprites()
+                self.board.setTile(self.body.pop().pos, None)
+                self.assignSprites(False)
 
             # Consume direction buffer
             if len(self.direction) > 1:
@@ -77,7 +78,7 @@ class Snake(GameObject):
             return Direction.LEFT
         return Direction.UP
 
-    def changeDirection(self, keypress: pygame.event.Event) -> None:
+    def changeDirection(self, keypress: pygame.event.Event, dif: Difficulty) -> None:
         dir = None
         match keypress.key:
             case pygame.K_w:
@@ -92,7 +93,10 @@ class Snake(GameObject):
                 return
         if self.direction[-1] != dir.opposite():
             self.direction.append(dir)
+        elif dif == Difficulty.EASY:
+            self.body.reverse()
+            self.direction.append(dir)
 
     def draw(self, surface: pygame.Surface) -> None:
         for segment in self.body:
-            surface.blit(segment.sprite, self.board.getTileRect(segment.pos))
+            surface.blit(segment.sprite, self.getTileRect(segment.pos))

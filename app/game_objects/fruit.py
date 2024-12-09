@@ -1,5 +1,4 @@
 from app.board import Board
-from app.enums import Tile
 from app.position import Position
 from app.constants import SPRITES_PATH
 from app.game_objects.game_object import GameObject
@@ -8,9 +7,15 @@ from pygame.image import load
 
 
 class Fruit(GameObject):
-    def __init__(self, board: Board, snake_pos: Position) -> None:
+    def __init__(self, board: Board, snake_pos: Position, poisoned: bool, timeout: int) -> None:
         super().__init__(board)
-        self.sprite = load(SPRITES_PATH + "fruit.svg")
+        if poisoned:
+            self.sprite = load(SPRITES_PATH + "obstacle.svg")
+        else:
+            self.sprite = load(SPRITES_PATH + "fruit.svg")
+        self.timeout = timeout
+        self.poisoned = poisoned
+        self.warning = timeout // 10
         self.spawn(snake_pos)
 
     def spawn(self, pos: Position) -> None:
@@ -21,14 +26,22 @@ class Fruit(GameObject):
         sample = []
         while len(sample) < 3:
             pos = b.random(0)
-            if b.getTile(pos) == Tile.EMPTY:
+            if b.getTile(pos):
                 sample.append(pos)
 
         self.pos = sample[0]
         for i in range(1, len(sample)):
             if b.distance(sample[i], pos) > b.distance(self.pos, pos):
                 self.pos = sample[i]
-        b.setTile(self.pos, Tile.FRUIT)
+        b.setTile(self.pos, self)
+        self.timeleft = self.timeout
+        self.display = True
+
+    def update(self):
+        if self.timeleft <= self.warning:
+            self.display = not self.display
+
 
     def draw(self, surface: Surface) -> None:
-        surface.blit(self.sprite, self.board.getTileRect(self.pos))
+        if self.display:
+            surface.blit(self.sprite, self.getTileRect(self.pos))

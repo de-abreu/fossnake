@@ -53,6 +53,6 @@ while True:
         case _:
             break
     clk.tick(60)
-game_state.highscore.save()
+game_state.saveHighscore()
 pygame.quit()
 exit()

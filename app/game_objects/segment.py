@@ -1,6 +1,6 @@
 from app.board import Board
 from app.constants import SPRITES_PATH
-from app.enums import Direction, Tile
+from app.enums import Direction
 from app.position import Position
 from pygame.image import load
 
@@ -20,16 +20,15 @@ class Segment:
 
     def assignHead(self, dir: Direction, board: Board) -> None:
         next_tile = board.getTile(board.move(self.pos, dir, 1))
-        dir_i = list(Direction).index(dir)
-        if next_tile == Tile.EMPTY:
-            self.sprite = Segment.MOUTH_CLOSED[dir_i]
-        else:
-            self.sprite = Segment.MOUTH_OPEN[dir_i]
+        i = list(Direction).index(dir)
+        self.sprite = Segment.MOUTH_OPEN[i] if next_tile else Segment.MOUTH_CLOSED[i]
 
-    def assignNeck(self, next: Position, prev: Position, board: Board) -> None:
+    def assignNeck(
+        self, next: Position, prev: Position, eaten: bool, board: Board
+    ) -> None:
         match next:
             case up if up == board.move(self.pos, Direction.UP, 1):
-                if board.getTile(self.pos) == Tile.EATEN:
+                if eaten:
                     self.sprite = Segment.BELLY[0]
                 elif prev == board.move(self.pos, Direction.DOWN, 1):
                     self.sprite = Segment.BODY[0]
@@ -38,7 +37,7 @@ class Segment:
                 else:
                     self.sprite = Segment.BEND[3]
             case left if left == board.move(self.pos, Direction.LEFT, 1):
-                if board.getTile(self.pos) == Tile.EATEN:
+                if eaten:
                     self.sprite = Segment.BELLY[1]
                 elif prev == board.move(self.pos, Direction.RIGHT, 1):
                     self.sprite = Segment.BODY[1]
@@ -47,7 +46,7 @@ class Segment:
                 else:
                     self.sprite = Segment.BEND[1]
             case down if down == board.move(self.pos, Direction.DOWN, 1):
-                if board.getTile(self.pos) == Tile.EATEN:
+                if eaten:
                     self.sprite = Segment.BELLY[2]
                 elif prev == board.move(self.pos, Direction.UP, 1):
                     self.sprite = Segment.BODY[2]
@@ -56,7 +55,7 @@ class Segment:
                 else:
                     self.sprite = Segment.BEND[2]
             case _:
-                if board.getTile(self.pos) == Tile.EATEN:
+                if eaten:
                     self.sprite = Segment.BELLY[3]
                 elif prev == board.move(self.pos, Direction.LEFT, 1):
                     self.sprite = Segment.BODY[3]

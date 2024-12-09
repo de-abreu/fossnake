@@ -1,8 +1,8 @@
-from app.constants import BOUNDARIES
-from app.enums import Direction, Tile
+from app.enums import Direction
+from app.game_objects.game_object import GameObject
 from app.position import Position
-from pygame import Rect
 from random import randint as rand
+from typing import Optional
 
 
 class Board:
@@ -10,7 +10,9 @@ class Board:
         self.rows = rows
         self.columns = columns
         self.tile_size = tile_size
-        self.tiles = [[Tile.EMPTY for _ in range(columns)] for _ in range(rows)]
+        self.tiles: list[list[Optional[GameObject]]] = [
+            [None for _ in range(columns)] for _ in range(rows)
+        ]
 
     def distance(self, a: Position, b: Position) -> int:
         """
@@ -44,16 +46,8 @@ class Board:
         y = rand(margin, self.rows - (margin + 1))
         return Position(x, y)
 
-    def getTile(self, pos: Position) -> Tile:
+    def getTile(self, pos: Position) -> GameObject | None:
         return self.tiles[pos.y][pos.x]
 
-    def getTileRect(self, pos: Position) -> Rect:
-        return Rect(
-            pos.x * self.tile_size + BOUNDARIES,
-            pos.y * self.tile_size + BOUNDARIES,
-            self.tile_size,
-            self.tile_size,
-        )
-
-    def setTile(self, pos: Position, tile: Tile) -> None:
-        self.tiles[pos.y][pos.x] = tile
+    def setTile(self, pos: Position, obj: GameObject | None) -> None:
+        self.tiles[pos.y][pos.x] = obj

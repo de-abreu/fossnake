@@ -1,6 +1,8 @@
 from abc import abstractmethod, ABC
 from app.board import Board
-from pygame import Surface
+from app.constants import BOUNDARIES
+from app.position import Position
+from pygame import Surface, Rect
 
 
 class GameObject(ABC):
@@ -12,5 +14,18 @@ class GameObject(ABC):
         self.board = board
 
     @abstractmethod
+    def update(self) -> "GameObject | None":
+        pass
+
+    @abstractmethod
     def draw(self, surface: Surface) -> None:
         pass
+
+    def getTileRect(self, pos: Position) -> Rect:
+        return Rect(
+            (
+                pos.x * self.board.tile_size + BOUNDARIES,
+                pos.y * self.board.tile_size + BOUNDARIES,
+            ),
+            (self.board.tile_size,) * 2,
+        )

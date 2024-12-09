@@ -1,6 +1,10 @@
 from enum import Enum, auto
 
 
+class GameState(Enum):
+    RUNNING, PAUSED, GAMEOVER = (auto() for _ in range(3))
+
+
 class Difficulty(Enum):
     EASY, NORMAL, HARD = (auto() for _ in range(3))
 
@@ -19,7 +23,3 @@ class Direction(Enum):
 
 class Loop(Enum):
     MENU, SETUP, GAME, QUIT = (auto() for _ in range(4))
-
-
-class Tile(Enum):
-    EMPTY, SNAKE, FRUIT, EATEN, OBSTACLE = (auto() for _ in range(5))
