@@ -131,6 +131,9 @@ class Screen:
             self.display.blit(label, pos)
 
         # Print control instructions
+        self.printToCorner(
+            f"HIGHSCORE: {self.state.getHighscore():05d}", Screen.TOPLEFT
+        )
         self.printToCorner("ESC: QUIT", Screen.TOPRIGHT)
         self.printToCorner("W/A/S/D: MOVE", Screen.BOTTOMLEFT)
         self.printToCorner("ENTER: CONFIRM", Screen.BOTTOMRIGHT)
