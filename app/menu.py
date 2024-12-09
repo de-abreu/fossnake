@@ -1,4 +1,4 @@
-from app.enums import Difficulty, Loop
+from app.enums import Loop
 from app.state import State
 from app.screen import Screen
 from sys import exit

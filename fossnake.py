@@ -24,7 +24,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from app.constants import SCREEN_SIZE
 from app.enums import Difficulty, Loop
 from app.game import Game
 from app.menu import Menu
@@ -35,7 +34,7 @@ import pygame
 pygame.init()
 clk = pygame.time.Clock()
 game_state = State(Loop.MENU, Difficulty.EASY, "highscore.txt")
-screen = Screen(SCREEN_SIZE, game_state)
+screen = Screen(game_state)
 menu_loop = Menu(screen, game_state)
 game_loop = Game(screen, game_state)
 
