@@ -1,8 +1,8 @@
 from app.constants import BOUNDARIES
+from app.dataclasses import Position
 from app.enums import Direction
 from app.game_objects.fruit import Fruit
 from app.game_objects.snake import Snake
-from app.position import Position
 from pygame import Rect
 from random import randint as rand
 

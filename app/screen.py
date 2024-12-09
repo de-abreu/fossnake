@@ -74,7 +74,9 @@ class Screen:
                 )
         self.display.blit(label, pos)
 
-    def drawHUD(self, score: int, perc_energy: int, state: GameState) -> None:
+    def drawHUD(
+        self, score: int, energy: int, max_energy: int, state: GameState
+    ) -> None:
         match state:
             case GameState.RUNNING:
                 self.printToCorner(
@@ -87,13 +89,14 @@ class Screen:
             case _:
                 self.printToCorner("GAME OVER: PRESS ESC TO GO BACK", Screen.TOPLEFT)
         self.printToCorner(f"SCORE: {score:05d}", Screen.BOTTOMLEFT)
-        energy_length = int(perc_energy * self.energy_max_length)
+        energy_length = int(energy / max_energy * self.energy_max_length)
         energy_bar = pygame.Rect(
             (Screen.BOARD_LENGTH + BOUNDARIES - energy_length, self.bottom_row),
             (energy_length, BASE_CELL // 2),
         )
         self.display.blit(self.energy_label, self.energy_pos)
         pygame.draw.rect(self.display, Screen.FG, energy_bar)
+        pygame.draw.rect(self.display, Screen.FG, self.border, 5)
 
     def drawBoard(self, snake: Snake, fruits: list[Fruit], board: Board) -> None:
         self.display.fill(Screen.BG)

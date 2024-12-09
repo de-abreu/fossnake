@@ -44,6 +44,8 @@ class Snake:
             self.direction.append(dir)
         elif self.reversable:
             self.body.reverse()
+            for i in range(len(self.direction)):
+                self.direction[i] = self.direction[i].opposite()
             self.direction.append(dir)
 
     def update(self) -> None:

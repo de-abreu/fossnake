@@ -23,7 +23,7 @@ class Menu:
                             self.state.changeDifficulty(-1)
                         case pygame.K_d:
                             self.state.changeDifficulty(+1)
-                        case pygame.K_w | pygame.K_s:
+                        case pygame.K_RETURN:
                             self.state.loop = Loop.SETUP
 
     def draw(self):

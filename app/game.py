@@ -41,7 +41,7 @@ class Game:
                 self.increase_difficulty = 200
                 self.interval = 150
             case Difficulty.NORMAL:
-                self.board = Board(40, BASE_CELL // 2)
+                self.board = Board(20, BASE_CELL)
                 self.snake = self.placeSnake(
                     3 * self.board.size, 4 * self.board.size, False
                 )
@@ -49,21 +49,26 @@ class Game:
                     self.placeFruit(self.snake.head, True, 2 * self.board.size)
                     for _ in range(5)
                 ]
-                self.increase_difficulty = 100
-                self.interval = 100
+                self.increase_difficulty = 200
+                self.interval = 150
             case _:
-                self.board = Board(40, BASE_CELL // 2)
-                size = 20
+                self.board = Board(20, BASE_CELL)
                 self.snake = self.placeSnake(
                     4 * self.board.size, 3 * self.board.size, False
                 )
-                self.fruits = [self.placeFruit(self.snake.head, False, 2 * size)] + [
-                    self.placeFruit(self.snake.head, True, 2 * size) for _ in range(5)
+                self.fruits = [
+                    self.placeFruit(self.snake.head, False, 2 * self.board.size)
+                ] + [
+                    self.placeFruit(self.snake.head, True, 2 * self.board.size)
+                    for _ in range(5)
                 ]
                 self.increase_difficulty = 50
                 self.interval = 100
         self.score = 0
         self.eaten = False
+        self.game_state = GameState.RUNNING
+        pygame.time.set_timer(pygame.USEREVENT, self.interval)
+        self.assignSprites(False)
 
     def listenEvents(self) -> None:
         for event in pygame.event.get():
@@ -103,8 +108,8 @@ class Game:
                     self.state.updateHighscore(self.score)
                     if self.score < self.increase_difficulty:
                         self.interval = (
-                            self.interval * 95 // 100
-                        )  # Speed increase of 5%
+                            self.interval * 98 // 100
+                        )  # Speed increase of 2%
                         self.increase_difficulty += self.increase_difficulty
                         pygame.time.set_timer(pygame.USEREVENT, self.interval)
                 self.respawnfruit(next_tile)
@@ -116,7 +121,7 @@ class Game:
             self.snake.update()
             for fruit in self.fruits:
                 fruit.update()
-                if fruit.timeout == 0:
+                if fruit.timeleft == 0:
                     self.respawnfruit(fruit)
         else:
             self.game_state = GameState.GAMEOVER
@@ -125,7 +130,10 @@ class Game:
     def draw(self):
         self.screen.drawBoard(self.snake, self.fruits, self.board)
         self.screen.drawHUD(
-            self.score, self.snake.energy // self.snake.max_energy, self.game_state
+            self.score,
+            self.snake.energy,
+            self.snake.max_energy,
+            self.game_state,
         )
         pygame.display.update()
 
@@ -216,12 +224,11 @@ class Game:
         return snake
 
     def respawnfruit(self, fruit: Fruit) -> None:
-        self.fruits += [
-            self.placeFruit(
-                self.snake.head, fruit.poisoned, fruit.timeout
-            )
-        ]
-        self.fruits.remove(fruit)
+        self.fruits += [self.placeFruit(self.snake.head, fruit.poisoned, fruit.timeout)]
+        try:
+            self.fruits.remove(fruit)
+        except ValueError:
+            pass
 
     def placeFruit(self, snake: Position, poisoned: bool, timeout: int) -> Fruit:
         sample = []
