@@ -122,6 +122,7 @@ class Game:
             for fruit in self.fruits[:]:
                 fruit.update()
                 if fruit.timeleft == 0:
+                    self.board.setTile(fruit.pos, None)
                     self.respawnfruit(fruit)
         else:
             self.game_state = GameState.GAMEOVER
@@ -224,13 +225,8 @@ class Game:
         return snake
 
     def respawnfruit(self, fruit: Fruit) -> None:
-        try:
-            self.fruits.remove(fruit)
-            self.fruits += [
-                self.placeFruit(self.snake.head, fruit.poisoned, fruit.timeout)
-            ]
-        except Exception:
-            pass
+        self.fruits.remove(fruit)
+        self.fruits += [self.placeFruit(self.snake.head, fruit.poisoned, fruit.timeout)]
 
     def placeFruit(self, snake: Position, poisoned: bool, timeout: int) -> Fruit:
         sample = []
@@ -241,7 +237,7 @@ class Game:
 
         pos = sample[0]
         for other in sample[1:]:
-            if self.board.distance(snake, pos) > self.board.distance(snake, other):
+            if self.board.distance(snake, pos) < self.board.distance(snake, other):
                 pos = other
         fruit = Fruit(pos, poisoned, timeout)
         self.board.setTile(pos, fruit)
