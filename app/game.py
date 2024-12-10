@@ -119,7 +119,7 @@ class Game:
                 self.board.setTile(self.snake.body.pop().pos, None)
                 self.assignSprites(False)
             self.snake.update()
-            for fruit in self.fruits:
+            for fruit in self.fruits[:]:
                 fruit.update()
                 if fruit.timeleft == 0:
                     self.respawnfruit(fruit)
@@ -224,10 +224,12 @@ class Game:
         return snake
 
     def respawnfruit(self, fruit: Fruit) -> None:
-        self.fruits += [self.placeFruit(self.snake.head, fruit.poisoned, fruit.timeout)]
         try:
             self.fruits.remove(fruit)
-        except ValueError:
+            self.fruits += [
+                self.placeFruit(self.snake.head, fruit.poisoned, fruit.timeout)
+            ]
+        except Exception:
             pass
 
     def placeFruit(self, snake: Position, poisoned: bool, timeout: int) -> Fruit:
